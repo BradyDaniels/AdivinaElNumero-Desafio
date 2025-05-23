@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -34,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _minNumber = 1;
   int _maxNumber = 10;
   int tries = 5;
+  int rng = Random().nextInt(10);
   String? _errorMessage;
 
   String difficultyLabel(double value) {
@@ -90,13 +93,28 @@ class _MyHomePageState extends State<MyHomePage> {
                     }
                   });
                 },
+                onEditingComplete: () {
+                  setState(() {
+                    if (int.tryParse(taValue) != rng) {
+                      if (tries - 1 == 0) {
+                        tries = 5;
+                        _minNumber = 5;
+                        _maxNumber = 5;
+                        _difficultySliderValue = 0.0;
+                        rng = Random().nextInt(10);
+                      } else {
+                        tries = tries - 1;
+                      }
+                    }
+                  });
+                },
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Ingresa el numero",
                     errorText: _errorMessage),
               ),
               SizedBox(
-                height: 40,
+                height: 30,
               ),
               Text(difficultyLabel(_difficultySliderValue)),
               SizedBox(
@@ -136,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         _maxNumber = 10;
                         tries = 5;
                     }
+                    rng = _minNumber + Random().nextInt(_maxNumber);
                   });
                 },
               )
