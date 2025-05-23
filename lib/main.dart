@@ -30,25 +30,22 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String taValue = '';
-  double _difficultySliderValue = 0;
+  double _difficultySliderValue = 0.0;
   int _minNumber = 1;
   int _maxNumber = 10;
   int tries = 5;
+  String? _errorMessage;
 
   String difficultyLabel(double value) {
-    switch (value.round()) {
-      case 0:
+    switch (value) {
+      case 0.0:
         return "Facil";
-        break;
-      case 1:
-        return "Normal";
-        break;
-      case 2:
-        return "Dificil";
-        break;
-      case 3:
+      case 1.0:
+        return "Medio";
+      case 2.0:
         return "Avanzado";
-        break;
+      case 3.0:
+        return "Extremo";
       default:
         return "Facil";
     }
@@ -67,6 +64,10 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              Text("Numero de intentos: $tries"),
+              SizedBox(
+                height: 30,
+              ),
               TextField(
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
@@ -75,11 +76,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 onChanged: (value) {
                   setState(() {
                     taValue = value;
+                    _errorMessage = null;
+                    if (value.isNotEmpty) {
+                      final int? num = int.tryParse(value);
+                      if (num != null) {
+                        if (num < _minNumber || num > _maxNumber) {
+                          _errorMessage =
+                              "El numero a ingresar debe estar entre $_minNumber y $_maxNumber";
+                        }
+                      } else {
+                        _errorMessage = "Por favor, ingresa un numero valido";
+                      }
+                    }
                   });
                 },
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: "Ingresa el numero"),
+                    labelText: "Ingresa el numero",
+                    errorText: _errorMessage),
               ),
               SizedBox(
                 height: 40,
@@ -96,6 +110,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 onChanged: (double value) {
                   setState(() {
                     _difficultySliderValue = value;
+                    switch (value) {
+                      case 0.0:
+                        _minNumber = 1;
+                        _maxNumber = 10;
+                        tries = 5;
+                        break;
+                      case 1.0:
+                        _minNumber = 1;
+                        _maxNumber = 20;
+                        tries = 8;
+                        break;
+                      case 2.0:
+                        _minNumber = 1;
+                        _maxNumber = 100;
+                        tries = 15;
+                        break;
+                      case 3.0:
+                        _minNumber = 1;
+                        _maxNumber = 1000;
+                        tries = 25;
+                        break;
+                      default:
+                        _minNumber = 1;
+                        _maxNumber = 10;
+                        tries = 5;
+                    }
                   });
                 },
               )
