@@ -30,6 +30,29 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String taValue = '';
+  double _difficultySliderValue = 0;
+  int _minNumber = 1;
+  int _maxNumber = 10;
+  int tries = 5;
+
+  String difficultyLabel(double value) {
+    switch (value.round()) {
+      case 0:
+        return "Facil";
+        break;
+      case 1:
+        return "Normal";
+        break;
+      case 2:
+        return "Dificil";
+        break;
+      case 3:
+        return "Avanzado";
+        break;
+      default:
+        return "Facil";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +81,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     border: OutlineInputBorder(),
                     labelText: "Ingresa el numero"),
               ),
+              SizedBox(
+                height: 40,
+              ),
+              Text(difficultyLabel(_difficultySliderValue)),
+              SizedBox(
+                height: 5,
+              ),
+              Slider(
+                value: _difficultySliderValue,
+                max: 3,
+                divisions: 3,
+                label: difficultyLabel(_difficultySliderValue),
+                onChanged: (double value) {
+                  setState(() {
+                    _difficultySliderValue = value;
+                  });
+                },
+              )
             ],
           ),
         )));
