@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MyApp());
@@ -6,28 +9,11 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Adivina el numero',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(
             seedColor: const Color.fromARGB(255, 71, 95, 202)),
         useMaterial3: true,
@@ -39,88 +25,298 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class HistorialItem {
+  int value;
+  bool acert;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  HistorialItem({required this.value, required this.acert});
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String taValue = '';
+  int _numValue = 0;
+  double _difficultySliderValue = 0.0;
+  int _minNumber = 1;
+  int _maxNumber = 10;
+  int tries = 5;
+  int currentTries = 5;
+  int rng = 1 + Random().nextInt(10);
+  String? _errorMessage;
+  List<HistorialItem> historial = [];
+  List<int> historialRng = [];
+  List<int> menorQue = [];
+  List<int> mayorQue = [];
+
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  String difficultyLabel(double value) {
+    switch (value) {
+      case 0.0:
+        return "Facil";
+      case 1.0:
+        return "Medio";
+      case 2.0:
+        return "Avanzado";
+      case 3.0:
+        return "Extremo";
+      default:
+        return "Facil";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-          child: Container(
-        padding: const EdgeInsets.all(35.0),
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(), labelText: "Ingresa el numero"),
-            )
-          ],
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title),
         ),
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        body: Center(
+            child: Container(
+          padding: const EdgeInsets.all(35.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Text("Numero de intentos: $currentTries"),
+              SizedBox(
+                height: 30,
+              ),
+              //INPUT PARA INGRESAR NUMERO
+              TextField(
+                controller: _textController,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ],
+                onChanged: (value) {
+                  //Validacion del numero ingresado
+                  setState(() {
+                    taValue = value;
+                    _errorMessage = null;
+                    if (value.isNotEmpty) {
+                      final int? num = int.tryParse(value);
+                      if (num != null) {
+                        _numValue = num;
+                        if (num < _minNumber || num > _maxNumber) {
+                          _errorMessage =
+                              "El numero a ingresar debe estar entre $_minNumber y $_maxNumber";
+                        }
+                      } else {
+                        _errorMessage = "Por favor, ingresa un numero valido";
+                      }
+                    }
+                  });
+                },
+                onEditingComplete: () {
+                  setState(() {
+                    if (taValue.isNotEmpty &&
+                        _numValue >= _minNumber &&
+                        _numValue <= _maxNumber) {
+                      if (_numValue != rng) {
+                        //Reinicio de la partida
+                        if (currentTries - 1 == 0) {
+                          currentTries = tries;
+                          _minNumber = 1;
+                          //Agregar respuesta correcta al historial
+                          historial.insert(
+                              0, HistorialItem(value: rng, acert: false));
+                          rng = 1 + Random().nextInt(_maxNumber);
+                          //Despejar columnas mayor y menor que
+                          mayorQue.clear();
+                          menorQue.clear();
+                        } else {
+                          currentTries = currentTries - 1;
+                          //Validacion de la ubicacion del numero ingresado
+                          if (_numValue > rng) {
+                            mayorQue.insert(0, _numValue);
+                          } else if (_numValue < rng) {
+                            menorQue.insert(0, _numValue);
+                          }
+                        }
+                      } else {
+                        historial.insert(
+                            0, HistorialItem(value: rng, acert: true));
+                        rng = 1 + Random().nextInt(_maxNumber);
+                        mayorQue.clear();
+                        menorQue.clear();
+                      }
+                    }
+
+                    _textController.clear();
+                    taValue = '';
+                  });
+                },
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Ingresa el numero",
+                    errorText: _errorMessage),
+              ),
+              //-------------------------
+              SizedBox(
+                height: 30,
+              ),
+              //VISUALIZADOR DE DIFICULTAD
+              Text(difficultyLabel(_difficultySliderValue)),
+              SizedBox(
+                height: 45,
+              ),
+              //COLUMNAS MENOR,MAYOR Y HISTORIAL
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text("menor que"),
+                        Container(
+                          height: 200.0,
+                          width: 80.0,
+                          padding: const EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: menorQue
+                                  .map((item) => Text(item.toString()))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text("mayor que"),
+                        Container(
+                          height: 200.0,
+                          width: 80.0,
+                          padding: const EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: mayorQue
+                                  .map((item) => Text(item.toString()))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text("historial"),
+                        Container(
+                          height: 200.0,
+                          width: 80.0,
+                          padding: const EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: historial
+                                  .map((item) => Text(
+                                        item.value.toString(),
+                                        style: TextStyle(
+                                            color: item.acert
+                                                ? Colors.green
+                                                : Colors.red),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 45,
+              ),
+              //---------------------
+              //SELECTOR DE DIFICULTAD
+              Slider(
+                value: _difficultySliderValue,
+                max: 3,
+                divisions: 3,
+                label: difficultyLabel(_difficultySliderValue),
+                onChanged: (double value) {
+                  setState(() {
+                    _difficultySliderValue = value;
+                    switch (value) {
+                      case 0.0:
+                        _minNumber = 1;
+                        _maxNumber = 10;
+                        currentTries = tries = 5;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        _textController.clear();
+                        break;
+                      case 1.0:
+                        _minNumber = 1;
+                        _maxNumber = 20;
+                        currentTries = tries = 8;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        _textController.clear();
+                        break;
+                      case 2.0:
+                        _minNumber = 1;
+                        _maxNumber = 100;
+                        currentTries = tries = 15;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        _textController.clear();
+                        break;
+                      case 3.0:
+                        _minNumber = 1;
+                        _maxNumber = 1000;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        currentTries = tries = 25;
+                        _textController.clear();
+                        break;
+                      default:
+                        _minNumber = 1;
+                        _maxNumber = 10;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        currentTries = tries = 5;
+                        _textController.clear();
+                    }
+                    rng = 1 + Random().nextInt(_maxNumber);
+                  });
+                },
+              )
+              //-----------------
+            ],
+          ),
+        )));
   }
 }
