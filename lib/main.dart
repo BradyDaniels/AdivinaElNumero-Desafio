@@ -97,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(
                 height: 30,
               ),
+              //INPUT PARA INGRESAR NUMERO
               TextField(
                 controller: _textController,
                 keyboardType: TextInputType.number,
@@ -104,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   FilteringTextInputFormatter.digitsOnly
                 ],
                 onChanged: (value) {
+                  //Validacion del numero ingresado
                   setState(() {
                     taValue = value;
                     _errorMessage = null;
@@ -123,18 +125,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 onEditingComplete: () {
                   setState(() {
-                    if (taValue.isNotEmpty) {
+                    if (taValue.isNotEmpty &&
+                        _numValue >= _minNumber &&
+                        _numValue <= _maxNumber) {
                       if (_numValue != rng) {
+                        //Reinicio de la partida
                         if (currentTries - 1 == 0) {
                           currentTries = tries;
                           _minNumber = 1;
+                          //Agregar respuesta correcta al historial
                           historial.insert(
                               0, HistorialItem(value: rng, acert: false));
                           rng = 1 + Random().nextInt(_maxNumber);
+                          //Despejar columnas mayor y menor que
                           mayorQue.clear();
                           menorQue.clear();
                         } else {
                           currentTries = currentTries - 1;
+                          //Validacion de la ubicacion del numero ingresado
                           if (_numValue > rng) {
                             mayorQue.insert(0, _numValue);
                           } else if (_numValue < rng) {
@@ -159,13 +167,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     labelText: "Ingresa el numero",
                     errorText: _errorMessage),
               ),
+              //-------------------------
               SizedBox(
                 height: 30,
               ),
+              //VISUALIZADOR DE DIFICULTAD
               Text(difficultyLabel(_difficultySliderValue)),
               SizedBox(
                 height: 45,
               ),
+              //COLUMNAS MENOR,MAYOR Y HISTORIAL
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -248,6 +259,8 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(
                 height: 45,
               ),
+              //---------------------
+              //SELECTOR DE DIFICULTAD
               Slider(
                 value: _difficultySliderValue,
                 max: 3,
@@ -301,6 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 },
               )
+              //-----------------
             ],
           ),
         )));
