@@ -39,10 +39,12 @@ class HistorialItem {
 
 class _MyHomePageState extends State<MyHomePage> {
   String taValue = '';
+  int _numValue = 0;
   double _difficultySliderValue = 0.0;
   int _minNumber = 1;
   int _maxNumber = 10;
   int tries = 5;
+  int currentTries = 5;
   int rng = Random().nextInt(10);
   String? _errorMessage;
   List<HistorialItem> historial = [];
@@ -78,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Text("Numero de intentos: $tries"),
+              Text("Numero de intentos: $currentTries"),
               SizedBox(
                 height: 30,
               ),
@@ -94,6 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (value.isNotEmpty) {
                       final int? num = int.tryParse(value);
                       if (num != null) {
+                        _numValue = num;
                         if (num < _minNumber || num > _maxNumber) {
                           _errorMessage =
                               "El numero a ingresar debe estar entre $_minNumber y $_maxNumber";
@@ -106,22 +109,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 onEditingComplete: () {
                   setState(() {
-                    if (int.tryParse(taValue) != rng) {
-                      if (tries - 1 == 0) {
-                        tries = 5;
-                        _minNumber = 1;
-                        _maxNumber = 5;
-                        _difficultySliderValue = 0.0;
-                        rng = Random().nextInt(5);
-                        historial.insert(
-                            0, HistorialItem(value: rng, acert: false));
+                    if (taValue.isNotEmpty) {
+                      if (_numValue != rng) {
+                        if (currentTries - 1 == 0) {
+                          currentTries = tries;
+                          _minNumber = 1;
+                          rng = Random().nextInt(5);
+                          historial.insert(
+                              0, HistorialItem(value: rng, acert: false));
+                          mayorQue.clear();
+                          menorQue.clear();
+                        } else {
+                          currentTries = currentTries - 1;
+
+                          if (_numValue > rng) {
+                            mayorQue.insert(0, _numValue);
+                          } else if (_numValue < rng) {
+                            menorQue.insert(0, _numValue);
+                          }
+                        }
                       } else {
-                        tries = tries - 1;
+                        historial.insert(
+                            0, HistorialItem(value: rng, acert: true));
+                        rng = 1 + Random().nextInt(_maxNumber);
+                        mayorQue.clear();
+                        menorQue.clear();
                       }
-                    } else {
-                      historial.insert(
-                          0, HistorialItem(value: rng, acert: true));
-                      rng = _minNumber + Random().nextInt(_maxNumber);
                     }
                   });
                 },
@@ -153,7 +166,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           child: SingleChildScrollView(
                             child: Column(
-                              children: [],
+                              children: menorQue
+                                  .map((item) => Text(item.toString()))
+                                  .toList(),
                             ),
                           ),
                         ),
@@ -174,7 +189,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           child: SingleChildScrollView(
                             child: Column(
-                              children: [],
+                              children: mayorQue
+                                  .map((item) => Text(item.toString()))
+                                  .toList(),
                             ),
                           ),
                         ),
@@ -227,29 +244,37 @@ class _MyHomePageState extends State<MyHomePage> {
                       case 0.0:
                         _minNumber = 1;
                         _maxNumber = 10;
-                        tries = 5;
+                        currentTries = tries = 5;
+                        mayorQue.clear();
+                        menorQue.clear();
                         break;
                       case 1.0:
                         _minNumber = 1;
                         _maxNumber = 20;
-                        tries = 8;
+                        currentTries = tries = 8;
                         break;
                       case 2.0:
                         _minNumber = 1;
                         _maxNumber = 100;
-                        tries = 15;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        currentTries = tries = 15;
                         break;
                       case 3.0:
                         _minNumber = 1;
                         _maxNumber = 1000;
-                        tries = 25;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        currentTries = tries = 25;
                         break;
                       default:
                         _minNumber = 1;
                         _maxNumber = 10;
-                        tries = 5;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        currentTries = tries = 5;
                     }
-                    rng = _minNumber + Random().nextInt(_maxNumber);
+                    rng = 1 + Random().nextInt(_maxNumber);
                   });
                 },
               )
