@@ -45,12 +45,25 @@ class _MyHomePageState extends State<MyHomePage> {
   int _maxNumber = 10;
   int tries = 5;
   int currentTries = 5;
-  int rng = Random().nextInt(10);
+  int rng = 1 + Random().nextInt(10);
   String? _errorMessage;
   List<HistorialItem> historial = [];
   List<int> historialRng = [];
   List<int> menorQue = [];
   List<int> mayorQue = [];
+
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   String difficultyLabel(double value) {
     switch (value) {
@@ -85,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 30,
               ),
               TextField(
+                controller: _textController,
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.digitsOnly
@@ -114,14 +128,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         if (currentTries - 1 == 0) {
                           currentTries = tries;
                           _minNumber = 1;
-                          rng = Random().nextInt(5);
                           historial.insert(
                               0, HistorialItem(value: rng, acert: false));
+                          rng = 1 + Random().nextInt(_maxNumber);
                           mayorQue.clear();
                           menorQue.clear();
                         } else {
                           currentTries = currentTries - 1;
-
                           if (_numValue > rng) {
                             mayorQue.insert(0, _numValue);
                           } else if (_numValue < rng) {
@@ -136,6 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         menorQue.clear();
                       }
                     }
+
+                    _textController.clear();
+                    taValue = '';
                   });
                 },
                 decoration: InputDecoration(
@@ -247,18 +263,23 @@ class _MyHomePageState extends State<MyHomePage> {
                         currentTries = tries = 5;
                         mayorQue.clear();
                         menorQue.clear();
+                        _textController.clear();
                         break;
                       case 1.0:
                         _minNumber = 1;
                         _maxNumber = 20;
                         currentTries = tries = 8;
+                        mayorQue.clear();
+                        menorQue.clear();
+                        _textController.clear();
                         break;
                       case 2.0:
                         _minNumber = 1;
                         _maxNumber = 100;
+                        currentTries = tries = 15;
                         mayorQue.clear();
                         menorQue.clear();
-                        currentTries = tries = 15;
+                        _textController.clear();
                         break;
                       case 3.0:
                         _minNumber = 1;
@@ -266,6 +287,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         mayorQue.clear();
                         menorQue.clear();
                         currentTries = tries = 25;
+                        _textController.clear();
                         break;
                       default:
                         _minNumber = 1;
@@ -273,6 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         mayorQue.clear();
                         menorQue.clear();
                         currentTries = tries = 5;
+                        _textController.clear();
                     }
                     rng = 1 + Random().nextInt(_maxNumber);
                   });
