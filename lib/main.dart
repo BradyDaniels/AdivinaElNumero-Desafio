@@ -30,6 +30,13 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class HistorialItem {
+  int value;
+  bool acert;
+
+  HistorialItem({required this.value, required this.acert});
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   String taValue = '';
   double _difficultySliderValue = 0.0;
@@ -38,6 +45,10 @@ class _MyHomePageState extends State<MyHomePage> {
   int tries = 5;
   int rng = Random().nextInt(10);
   String? _errorMessage;
+  List<HistorialItem> historial = [];
+  List<int> historialRng = [];
+  List<int> menorQue = [];
+  List<int> mayorQue = [];
 
   String difficultyLabel(double value) {
     switch (value) {
@@ -98,13 +109,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (int.tryParse(taValue) != rng) {
                       if (tries - 1 == 0) {
                         tries = 5;
-                        _minNumber = 5;
+                        _minNumber = 1;
                         _maxNumber = 5;
                         _difficultySliderValue = 0.0;
-                        rng = Random().nextInt(10);
+                        rng = Random().nextInt(5);
+                        historial.insert(
+                            0, HistorialItem(value: rng, acert: false));
                       } else {
                         tries = tries - 1;
                       }
+                    } else {
+                      historial.insert(
+                          0, HistorialItem(value: rng, acert: true));
+                      rng = _minNumber + Random().nextInt(_maxNumber);
                     }
                   });
                 },
@@ -118,7 +135,85 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(difficultyLabel(_difficultySliderValue)),
               SizedBox(
-                height: 5,
+                height: 45,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text("menor que"),
+                        Container(
+                          height: 200.0,
+                          width: 80.0,
+                          padding: const EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text("mayor que"),
+                        Container(
+                          height: 200.0,
+                          width: 80.0,
+                          padding: const EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text("historial"),
+                        Container(
+                          height: 200.0,
+                          width: 80.0,
+                          padding: const EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2.0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: historial
+                                  .map((item) => Text(
+                                        item.value.toString(),
+                                        style: TextStyle(
+                                            color: item.acert
+                                                ? Colors.green
+                                                : Colors.red),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 45,
               ),
               Slider(
                 value: _difficultySliderValue,
